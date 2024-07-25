@@ -7,12 +7,12 @@ import { CreateUserDto } from './dtos/create-user.dto';
 export class UsersService {
   constructor(@InjectRepository(User) private repo: Repository<User>) {}
 
-  create(email: string, password: string) {
+  async create(email: string, password: string) {
     /*
       if the user entity instance does not created then, the hooks will not called while performing operations on repository/db like, so try to create/get entity instance first.
     */
     const user = this.repo.create({ email, password });
-    this.repo.save(user);
+    await this.repo.save(user);
     return user;
   }
 

@@ -14,20 +14,28 @@ import {
   Query,
 } from '@nestjs/common';
 import { UserDto } from './dtos/user.dto';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 @Serialize(UserDto)
 export class UsersController {
-  constructor(private userService: UsersService) {}
+  constructor(
+    private userService: UsersService,
+    private authService: AuthService,
+  ) {}
 
-  @Post('/login')
-  login(@Body() body: any) {}
-
+  // POST:  /auth/signin
+  @Post('/signin')
+  signinInUser(@Body() body: CreateUserDto) {
+    return this.authService.signIn(body.email, body.password);
+  }
+  // POST:  /auth/signup
   @Post('/signup')
   createUser(@Body() body: CreateUserDto) {
-    return this.userService.create(body.email, body.password);
+    return this.authService.signUp(body.email, body.password);
   }
 
+  // GET:  /auth/:id
   @Get('/:id')
   async findUser(@Param() params: { id: string }) {
     const result = await this.userService.findOne(+params.id);
@@ -35,11 +43,13 @@ export class UsersController {
     return result;
   }
 
+  // GET:  /auth/
   @Get('/')
   findAllUser(@Query() query: { email: string }) {
     return this.userService.findAll(query.email);
   }
 
+  // PATCH:  /auth/:id
   @Patch('/:id')
   async updateUser(
     @Param() params: { id: string },
@@ -50,6 +60,7 @@ export class UsersController {
     return result;
   }
 
+  // DELETE:  /auth/:id
   @Delete('/:id')
   async deleteUser(@Param() params: { id: string }) {
     const result = await this.userService.delete(+params.id);
