@@ -3,10 +3,8 @@ import {
   Column,
   PrimaryGeneratedColumn,
   AfterUpdate,
-  IsNull,
   AfterInsert,
   AfterRemove,
-  Unique,
 } from 'typeorm';
 
 @Entity()
