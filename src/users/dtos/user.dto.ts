@@ -7,4 +7,13 @@ export class UserDto {
   
   @Expose()
   email: string;
+
+  @Expose()
+  success: boolean;
+
+  @Expose()
+  message: string;
+
+  @Expose()
+  statusCode: number;
 }

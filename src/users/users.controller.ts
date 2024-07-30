@@ -3,18 +3,28 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UsersService } from './users.service';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   Patch,
   Post,
   Query,
+  Req,
+  Res,
+  Session,
+  UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { UserDto } from './dtos/user.dto';
 import { AuthService } from './auth.service';
+import { CurrentUser } from 'src/decorators/current-user.decorator';
+import { User } from './user.entity';
+import { AuthGuard } from 'src/guards/auth.guard';
 
 @Controller('auth')
 @Serialize(UserDto)
@@ -24,15 +34,46 @@ export class UsersController {
     private authService: AuthService,
   ) {}
 
+  // POST:  /auth/signout
+  @Get('/signout')
+  @HttpCode(200)
+  signOutUser(@Session() session: any) {
+    session.userId = null;
+    return {
+      success: true,
+      statusCode: 200,
+      message: 'Logout successfully!',
+    };
+  }
   // POST:  /auth/signin
   @Post('/signin')
-  signinInUser(@Body() body: CreateUserDto) {
-    return this.authService.signIn(body.email, body.password);
+  @HttpCode(200)
+  async signinInUser(@Body() body: CreateUserDto, @Session() session: any) {
+    const result = await this.authService.signIn(body.email, body.password);
+    if (!result) {
+      throw new BadRequestException('Incorrect email or password');
+    }
+    session.userId = result.id;
+    return result;
   }
+
+  // POST:  /auth/me
+  @Get('/me')
+  @HttpCode(200)
+  @UseGuards(AuthGuard)
+  async getMe(@CurrentUser() user: User) {
+    return user;
+  }
+
   // POST:  /auth/signup
   @Post('/signup')
-  createUser(@Body() body: CreateUserDto) {
-    return this.authService.signUp(body.email, body.password);
+  async signUpUser(@Body() body: CreateUserDto, @Session() session: any) {
+    const result = await this.authService.signUp(body.email, body.password);
+    if (!result) {
+      throw new BadRequestException('Email already in use');
+    }
+    session.userId = result.id;
+    return result;
   }
 
   // GET:  /auth/:id

@@ -12,7 +12,7 @@ export class AuthService {
     const results = await this.userService.findAll(email);
     if (results.length > 0) {
       // user already exits
-      throw new BadRequestException('Email already in use');
+      return null;
     }
     // hash password
     const hashPassword = await bcrypt.hash(password, saltOrRounds);
@@ -27,7 +27,7 @@ export class AuthService {
     const results = await this.userService.findAll(email);
     if (results.length === 0) {
       // user does not exits
-      throw new BadRequestException('Incorrect email or password');
+      return null;
     }
     const isMatch = await bcrypt.compare(password, results[0].password);
     if (!isMatch) {
